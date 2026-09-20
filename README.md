@@ -10,6 +10,8 @@ Moodle のバックアップファイル（`.mbz`）を Moodle 本体へリス�
 
 ## 開発
 
+Node.js 18 / 20 / 22 系に対応しています（Vite 6 系を使用）。
+
 ```bash
 npm install
 npm run dev      # 開発サーバー
