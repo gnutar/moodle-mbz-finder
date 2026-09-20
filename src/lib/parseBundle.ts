@@ -173,8 +173,7 @@ export function parseBundle(bundle: RawBundle): BackupIndex {
   const activityEls = contentsEl ? childrenOf(firstChild(contentsEl, "activities") ?? contentsEl, "activity") : [];
   const unassignedActivities: ActivityNode[] = [];
 
-  for (const el of activityEls) {
-    const activityId = childText(el, "activityid") ?? "";
+  activityEls.forEach((el, idx) => {
     const sectionId = childText(el, "sectionid") ?? "";
     const directory = childText(el, "directory") ?? "";
     const moduleName = childText(el, "modulename") ?? "";
@@ -184,11 +183,19 @@ export function parseBundle(bundle: RawBundle): BackupIndex {
     // instead of the directory's own (negligible) footprint, since that's
     // what an export of this activity will actually produce.
     const dirKey = directory.split("/").pop() ?? directory;
+    // Moodle's directory naming convention is "<modname>_<cmid>" — a stable,
+    // always-present fallback for whichever id field isn't present (or
+    // isn't under the tag name we expect) in this particular backup. The
+    // element index is a last-resort tiebreaker so a selection checkbox is
+    // never accidentally shared by more than one activity.
+    const dirDerivedId = dirKey.match(/_(\d+)$/)?.[1] ?? dirKey;
+    const moduleId = childText(el, "moduleid") || dirDerivedId;
+    const activityId = childText(el, "activityid") || moduleId || dirKey || `activity-${idx}`;
     const fileIds = activityFileIds[dirKey] ?? [];
     const approxSizeBytes = fileIds.reduce((sum, id) => sum + (fileMap[id]?.filesize ?? 0), 0);
     const node: ActivityNode = {
       activityId,
-      moduleId: childText(el, "moduleid") ?? "",
+      moduleId,
       moduleName,
       title: childText(el, "title") ?? moduleName,
       sectionId,
@@ -199,7 +206,7 @@ export function parseBundle(bundle: RawBundle): BackupIndex {
     const section = sectionById.get(sectionId);
     if (section) section.activities.push(node);
     else unassignedActivities.push(node);
-  }
+  });
 
   for (const section of sections) {
     const sequence = (section as unknown as { _sequence: string[] })._sequence;
