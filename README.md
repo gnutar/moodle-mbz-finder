@@ -10,8 +10,7 @@ Moodle のバックアップファイル（`.mbz`）を Moodle 本体へリス�
 
 ## 開発
 
-Node.js `^20.19.0` または `>=22.12.0` が必要です（Vite 8 の要件。それより古い Node では
-`node:util` の `styleText` が無く起動時に落ちます）。nvm 等で切り替えてください。
+Node.js 18 / 20 / 22 系に対応しています（Vite 6 系を使用）。
 
 ```bash
 npm install
